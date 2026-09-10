@@ -1,4 +1,6 @@
-from debts import show_debts, add_debt, load_debts_from_json, save_debts_to_json
+from debts import show_debts, add_debt, delete_debt, update_debt
+
+from storage import load_debts_from_json, save_debts_to_json
 
 debts = load_debts_from_json()
 
@@ -26,30 +28,19 @@ while True:
 
     elif option == "3":
         person = input("Ingrese el nombre de la persona: ")
-        for debt in debts:
-            if debt["person"] == person:
-                debts.remove(debt)
-                save_debts_to_json(debts)
-                print(f"Deuda eliminada para {person}")
-                break
-
-                
+        if delete_debt(debts, person):
+            save_debts_to_json(debts)
+            print(f"Deuda eliminada para {person}")
         else:
             print(f"No se encontró ninguna deuda para {person}")
 
     elif option == "4":
         person = input("Ingrese el nombre de la persona: ")
-        for debt in debts:
-            if debt["person"] == person:
-                new_amount = int(input("Ingrese el nuevo monto de la deuda: "))
-                new_paid = int(input("Ingrese el nuevo monto pagado: "))
-                debt["amount"] = new_amount
-                debt["paid"] = new_paid
-                save_debts_to_json(debts)
-                print(f"Deuda actualizada para {person}: Monto = {new_amount}, Pagado = {new_paid}")
-                break
-
-                
+        new_amount = int(input("Ingrese el nuevo monto de la deuda: "))
+        new_paid = int(input("Ingrese el nuevo monto pagado: "))
+        if update_debt(debts, person, new_amount, new_paid):
+            save_debts_to_json(debts)
+            print(f"Deuda actualizada para {person}: Monto = {new_amount}, Pagado = {new_paid}")
         else:
             print(f"No se encontró ninguna deuda para {person}")
 
