@@ -1,6 +1,18 @@
+import json
+
 def calculate_remaining(amount, paid):
     return amount - paid
 
+def load_debts_from_json():
+    try:
+        with open("debts.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+def save_debts_to_json(debts):
+    with open("debts.json", "w") as f:
+        json.dump(debts, f)
 
 def add_debt(debts, person, amount, paid):
     new_debt = {
