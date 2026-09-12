@@ -1,4 +1,6 @@
-from app.debts import add_debt, calculate_remaining, delete_debt, get_debt_data, get_integer, show_debts, update_debt
+from app.debts import add_debt, calculate_remaining, delete_debt, show_debts, update_debt
+
+from app.inputs import get_debt_data, get_integer
 
 from app.storage import load_debts_from_json, save_debts_to_json
 

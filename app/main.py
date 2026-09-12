@@ -1,4 +1,6 @@
-from debts import show_debts, add_debt, delete_debt, update_debt, get_debt_data
+from inputs import get_debt_data
+
+from debts import show_debts, add_debt, delete_debt, update_debt
 
 from storage import load_debts_from_json, save_debts_to_json
 
