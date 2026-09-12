@@ -1,6 +1,8 @@
 from app.debts import add_debt, calculate_remaining, delete_debt, show_debts, update_debt
 
-from app.inputs import get_debt_data, get_integer
+from app.inputs import get_debt_data, get_integer, get_update_data
+
+from app.main import execute_option, add_debt_action, delete_debt_action, main, show_menu, update_debt_action
 
 from app.storage import load_debts_from_json, save_debts_to_json
 
@@ -187,4 +189,216 @@ def test_get_integer_invalid_input(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Por favor, ingrese un número entero válido." in captured.out
     assert result == 5000
+
+def test_get_update_data(monkeypatch):
+    inputs = iter(["6000", "2000"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    update_data = get_update_data()
+
+    assert update_data == {
+        "new_amount": 6000,
+        "new_paid": 2000,
+    }
+
+def test_get_update_data_zero_amount(monkeypatch):
+    inputs = iter(["0", "2000"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    with pytest.raises(ValueError) as excinfo:
+        get_update_data()
+
+    assert str(excinfo.value) == "El monto de la deuda no puede ser cero o negativo."
+
+def test_get_update_data_negative_amount(monkeypatch):
+    inputs = iter(["-500", "2000"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    with pytest.raises(ValueError) as excinfo:
+        get_update_data()
+
+    assert str(excinfo.value) == "El monto de la deuda no puede ser cero o negativo."
+
+def test_get_update_data_negative_paid(monkeypatch):
+    inputs = iter(["6000", "-100"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    with pytest.raises(ValueError) as excinfo:
+        get_update_data()
+
+    assert str(excinfo.value) == "El monto pagado no puede ser negativo."
+
+def test_get_update_data_invalid_input(monkeypatch, capsys):
+    inputs = iter(["abc", "6000", "xyz", "2000"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = get_update_data()
+
+    captured = capsys.readouterr()
+    assert "Por favor, ingrese un número entero válido." in captured.out
+    assert result == {
+        "new_amount": 6000,
+        "new_paid": 2000,
+    }
+
+def test_execute_option_exit():
+    debts = []
+    result = execute_option("5", debts)
+
+    assert result is True
+
+def test_execute_option_show_debts():
+    debts = []
+    result = execute_option("1", debts)
+
+    assert result is False
+
+def test_execute_option_invalid_option(capsys):
+    debts = []
+    result = execute_option("invalid", debts)
+
+    captured = capsys.readouterr()
+    assert "Opción inválida. Intente nuevamente." in captured.out
+    assert result is False
+
+def test_execute_option_add_debt(monkeypatch):
+    debts = []
+    inputs = iter(["Juan", "5000", "1000"])
+
+    def fake_save(debts):
+            pass  # Do nothing for testing
     
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("2", debts)
+
+    assert result is False
+    assert len(debts) == 1
+    assert debts[0]["person"] == "Juan"
+    assert debts[0]["amount"] == 5000
+    assert debts[0]["paid"] == 1000
+
+def test_execute_option_delete_debt(monkeypatch):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter(["Juan"])
+
+    def fake_save(debts):
+        pass  # Do nothing for testing
+
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("3", debts)
+
+    assert result is False
+    assert len(debts) == 0
+
+def test_execute_option_delete_debt_not_found(monkeypatch, capsys):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter(["Pedro"])
+
+    def fake_save(debts):
+        pass  # Do nothing for testing
+
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("3", debts)
+
+    captured = capsys.readouterr()
+    assert "No se encontró ninguna deuda para Pedro" in captured.out
+    assert result is False
+    assert len(debts) == 1
+
+def test_execute_option_update_debt(monkeypatch):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter(["Juan", "7000", "2500"])
+
+    def fake_save(debts):
+        pass  # Do nothing for testing
+
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("4", debts)
+
+    assert result is False
+    assert debts[0]["amount"] == 7000
+    assert debts[0]["paid"] == 2500
+
+def test_execute_option_update_debt_not_found(monkeypatch, capsys):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter(["Pedro", "7000", "2500"])
+
+    def fake_save(debts):
+        pass  # Do nothing for testing
+
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("4", debts)
+
+    captured = capsys.readouterr()
+    assert "No se encontró ninguna deuda para Pedro" in captured.out
+    assert result is False
+    assert debts[0]["amount"] == 5000
+    assert debts[0]["paid"] == 1000
+
+def test_execute_option_update_debt_empty_person(monkeypatch, capsys):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter([""])
+
+    def fake_save(debts):
+        pass  # Do nothing for testing
+
+    monkeypatch.setattr("app.main.save_debts_to_json", fake_save)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    result = execute_option("4", debts)
+
+    captured = capsys.readouterr()
+    assert "El nombre de la persona no puede estar vacío." in captured.out
+    assert result is False
+    assert debts[0]["amount"] == 5000
+    assert debts[0]["paid"] == 1000
+
+def test_show_menu(capsys):
+    show_menu()
+    captured = capsys.readouterr()
+    assert "1. Mostrar deudas" in captured.out
+    assert "2. Agregar deuda" in captured.out
+    assert "3. Eliminar deuda" in captured.out
+    assert "4. Actualizar deuda" in captured.out
+    assert "5. Salir" in captured.out
+
+def test_add_debt_action_value_error(monkeypatch, capsys):
+    debts = []
+    inputs = iter(["", "5000", "1000"])  # Empty person name
+
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    add_debt_action(debts)
+
+    captured = capsys.readouterr()
+    assert "El nombre de la persona no puede estar vacío." in captured.out
+    assert len(debts) == 0
+
+def test_update_debt_action_value_error(monkeypatch, capsys):
+    debts = [{"person": "Juan", "amount": 5000, "paid": 1000}]
+    inputs = iter(["Juan", "-7000", "2500"])  # Invalid new amount
+
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    update_debt_action(debts)
+
+    captured = capsys.readouterr()
+    assert "El monto de la deuda no puede ser cero o negativo." in captured.out
+    assert debts[0]["amount"] == 5000
+    assert debts[0]["paid"] == 1000
+
+def test_main_exit(monkeypatch):
+    monkeypatch.setattr("app.main.load_debts_from_json", lambda: [])
+    monkeypatch.setattr("builtins.input", lambda _: "5")
+
+    main()  
