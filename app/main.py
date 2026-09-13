@@ -4,6 +4,11 @@ from .debts import show_debts, add_debt, delete_debt, update_debt
 
 from .storage import load_debts_from_json, save_debts_to_json
 
+from .database import add_debt as add_debt_db
+from .database import delete_debt as delete_debt_db
+from .database import update_debt as update_debt_db
+from .database import get_debts
+
 def show_menu():
     print("1. Mostrar deudas")
     print("2. Agregar deuda")
@@ -13,6 +18,7 @@ def show_menu():
 
 def execute_option(option, debts):
     if option == "1":
+        debts = get_debts()
         show_debts(debts)
         return False
 
@@ -42,15 +48,13 @@ def add_debt_action(debts):
         print(error)
         return
 
-    add_debt(debts, debt["person"], debt["amount"], debt["paid"])
-    save_debts_to_json(debts)
+    add_debt_db(debt["person"], debt["amount"], debt["paid"])
 
     print(f"Deuda agregada para {debt['person']}: Monto = {debt['amount']}, Pagado = {debt['paid']}")
 
 def delete_debt_action(debts):
     person = input("Ingrese el nombre de la persona: ").strip()
-    if delete_debt(debts, person):
-        save_debts_to_json(debts)
+    if delete_debt_db(person):
         print(f"Deuda eliminada para {person}")
     else:
         print(f"No se encontró ninguna deuda para {person}")
@@ -65,8 +69,7 @@ def update_debt_action(debts):
     except ValueError as error:
         print(error)
         return 
-    if update_debt(debts, person, update_data["new_amount"], update_data["new_paid"]):
-        save_debts_to_json(debts)
+    if update_debt_db(person, update_data["new_amount"], update_data["new_paid"]):
         print(f"Deuda actualizada para {person}: Monto = {update_data['new_amount']}, Pagado = {update_data['new_paid']}")
     else:
         print(f"No se encontró ninguna deuda para {person}")
