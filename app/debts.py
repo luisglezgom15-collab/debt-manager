@@ -1,31 +1,6 @@
 def calculate_remaining(amount, paid):
     return amount - paid
 
-def delete_debt(debts, person):
-    for debt in debts:
-        if debt["person"] == person:
-            debts.remove(debt)
-            return True
-    return False
-
-def update_debt(debts, person, new_amount, new_paid):
-    for debt in debts:
-        if debt["person"] == person:
-            debt["amount"] = new_amount
-            debt["paid"] = new_paid
-            return True
-    return False
-
-def add_debt(debts, person, amount, paid):
-    new_debt = {
-        "person": person,
-        "amount": amount,
-        "paid": paid,
-    }
-
-    debts.append(new_debt)
-
-
 def show_debts(debts):
     for person in debts:
         remaining_debt = calculate_remaining(
