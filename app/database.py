@@ -7,76 +7,59 @@ def get_connection():
     )
 
 def get_debts():
-    connection = get_connection()
-    cursor = connection.cursor()
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
 
-    cursor.execute("SELECT * FROM debts")
+            cursor.execute("SELECT * FROM debts")
 
-    rows = cursor.fetchall()
+            rows = cursor.fetchall()
 
-    debts = []
+            debts = []
 
-    for row in rows:
-        id, person, amount, paid = row
+            for row in rows:
+                id, person, amount, paid = row
 
-        debts.append({
-            "id": id,
-            "person": person,
-            "amount": amount,
-            "paid": paid
-        })
-
-    cursor.close()
-    connection.close()
+                debts.append({
+                    "id": id,
+                    "person": person,
+                    "amount": amount,
+                    "paid": paid
+                })
 
     return debts
 
 def add_debt(person, amount, paid):
-    connection = get_connection()
-    cursor = connection.cursor()
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
 
-    cursor.execute(
-        "INSERT INTO debts (person, amount, paid) VALUES (%s, %s, %s)",
-        (person, amount, paid)
-    )
-
-    connection.commit()
-
-    cursor.close()
-    connection.close()
+            cursor.execute(
+                "INSERT INTO debts (person, amount, paid) VALUES (%s, %s, %s)",
+                (person, amount, paid)
+            )
 
 def update_debt(person, new_amount, new_paid):
-    connection = get_connection()
-    cursor = connection.cursor()
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
 
-    cursor.execute(
-        "UPDATE debts SET amount = %s, paid = %s WHERE person = %s",
-        (new_amount, new_paid, person)
-    )
+            cursor.execute(
+                "UPDATE debts SET amount = %s, paid = %s WHERE person = %s",
+                (new_amount, new_paid, person)
+            )
 
-    updated = cursor.rowcount
+            updated = cursor.rowcount
 
-    connection.commit()
-
-    cursor.close()
-    connection.close()
 
     return updated > 0
 
 def delete_debt(person):
-    connection = get_connection()
-    cursor = connection.cursor()
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
 
-    cursor.execute(
-        "DELETE FROM debts WHERE person = %s",
-        (person,)
-    )
+            cursor.execute(
+                "DELETE FROM debts WHERE person = %s",
+                (person,)
+            )
 
-    deleted = cursor.rowcount
-
-    connection.commit()
-
-    cursor.close()
-    connection.close()
+            deleted = cursor.rowcount
 
     return deleted > 0
