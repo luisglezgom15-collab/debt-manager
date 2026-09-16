@@ -9,13 +9,13 @@ def show_debts(debts):
         )
 
         if remaining_debt > 0:
-            print(f"{person['person']} debe todavía {remaining_debt}")
+            print(f"ID: {person['id']} | {person['person']} debe todavía {remaining_debt}")
 
         elif remaining_debt == 0:
-            print(f"{person['person']} ya ha pagado toda su deuda")
+            print(f"ID: {person['id']} | {person['person']} ya ha pagado toda su deuda")
 
         else:
             print(
-                f"{person['person']} ha pagado de más "
+                f"ID: {person['id']} | {person['person']} ha pagado de más "
                 f"y tiene un crédito de {-remaining_debt}"
             )

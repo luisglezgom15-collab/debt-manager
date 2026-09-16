@@ -1,13 +1,21 @@
+import os
+
 import psycopg
+from dotenv import load_dotenv
 
+load_dotenv()
 
-def get_connection():
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+def get_connection(database="debt_manager"):
     return psycopg.connect(
-        "dbname=debt_manager host=127.0.0.1 user=debt_app password=debt_password"
+        f"dbname={database} host={DB_HOST} user={DB_USER} password={DB_PASSWORD}"
     )
 
-def get_debts():
-    with get_connection() as connection:
+def get_debts(database="debt_manager"):
+    with get_connection(database) as connection:
         with connection.cursor() as cursor:
 
             cursor.execute("SELECT * FROM debts")
@@ -28,8 +36,8 @@ def get_debts():
 
     return debts
 
-def add_debt(person, amount, paid):
-    with get_connection() as connection:
+def add_debt(person, amount, paid, database="debt_manager"):
+    with get_connection(database) as connection:
         with connection.cursor() as cursor:
 
             cursor.execute(
@@ -37,13 +45,13 @@ def add_debt(person, amount, paid):
                 (person, amount, paid)
             )
 
-def update_debt(person, new_amount, new_paid):
-    with get_connection() as connection:
+def update_debt(id, new_amount, new_paid, database="debt_manager"):
+    with get_connection(database) as connection:
         with connection.cursor() as cursor:
 
             cursor.execute(
-                "UPDATE debts SET amount = %s, paid = %s WHERE person = %s",
-                (new_amount, new_paid, person)
+                "UPDATE debts SET amount = %s, paid = %s WHERE id = %s",
+                (new_amount, new_paid, id)
             )
 
             updated = cursor.rowcount
@@ -51,13 +59,13 @@ def update_debt(person, new_amount, new_paid):
 
     return updated > 0
 
-def delete_debt(person):
-    with get_connection() as connection:
+def delete_debt(id, database="debt_manager"):
+    with get_connection(database) as connection:
         with connection.cursor() as cursor:
 
             cursor.execute(
-                "DELETE FROM debts WHERE person = %s",
-                (person,)
+                "DELETE FROM debts WHERE id = %s",
+                (id,)
             )
 
             deleted = cursor.rowcount

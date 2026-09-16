@@ -1,4 +1,4 @@
-from .inputs import get_debt_data, get_update_data
+from .inputs import get_debt_data, get_update_data, get_integer
 
 from .debts import show_debts
 
@@ -51,26 +51,26 @@ def add_debt_action():
     print(f"Deuda agregada para {debt['person']}: Monto = {debt['amount']}, Pagado = {debt['paid']}")
 
 def delete_debt_action():
-    person = input("Ingrese el nombre de la persona: ").strip()
-    if delete_debt_db(person):
-        print(f"Deuda eliminada para {person}")
+    debt_id = get_integer("Ingrese el id de la deuda: ")
+    if delete_debt_db(debt_id):
+        print(f"Deuda eliminada para {debt_id}")
     else:
-        print(f"No se encontró ninguna deuda para {person}")
+        print(f"No se encontró ninguna deuda con el id: {debt_id}")
 
 def update_debt_action():
-    person = input("Ingrese el nombre de la persona: ")
-    if not person:
-        print("El nombre de la persona no puede estar vacío.")
+    debt_id = get_integer("Ingrese el id de la deuda: ")
+    if not debt_id:
+        print("El id de la deuda no puede estar vacío.")
         return 
     try:
         update_data = get_update_data()
     except ValueError as error:
         print(error)
         return 
-    if update_debt_db(person, update_data["new_amount"], update_data["new_paid"]):
-        print(f"Deuda actualizada para {person}: Monto = {update_data['new_amount']}, Pagado = {update_data['new_paid']}")
+    if update_debt_db(debt_id, update_data["new_amount"], update_data["new_paid"]):
+        print(f"Deuda con id: {debt_id} actualizada, Monto = {update_data['new_amount']}, Pagado = {update_data['new_paid']}")
     else:
-        print(f"No se encontró ninguna deuda para {person}")
+        print(f"No se encontró ninguna deuda con el id: {debt_id}")
 
 def main():
 

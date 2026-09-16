@@ -91,7 +91,7 @@ def test_get_debt_data_negative_paid(monkeypatch):
 
 def test_show_debts_remaining(capsys):
     debts = [
-        {"person": "Juan", "amount": 5000, "paid": 1000},
+        {"id": 1, "person": "Juan", "amount": 5000, "paid": 1000},
     ]
 
     show_debts(debts)
@@ -102,7 +102,7 @@ def test_show_debts_remaining(capsys):
 
 def test_show_debts_paid(capsys):
     debts = [
-        {"person": "Juan", "amount": 5000, "paid": 5000},
+        {"id": 1, "person": "Juan", "amount": 5000, "paid": 5000},
     ]
 
     show_debts(debts)
@@ -113,7 +113,7 @@ def test_show_debts_paid(capsys):
 
 def test_show_debts_overpaid(capsys):
     debts = [
-        {"person": "Juan", "amount": 5000, "paid": 6000},
+        {"id": 1, "person": "Juan", "amount": 5000, "paid": 6000},
     ]
 
     show_debts(debts)
@@ -220,7 +220,12 @@ def test_execute_option_add_debt(monkeypatch):
 
     execute_option("2")
 
+    juan_id = None
     debts = get_debts()
+
+    for debt in debts:
+        if debt["person"] == "Juan":
+            juan_id = debt["id"]
 
     assert any(
         debt["person"] == "Juan"
@@ -229,26 +234,43 @@ def test_execute_option_add_debt(monkeypatch):
         for debt in debts
     )
 
-    delete_debt_db("Juan")
+    delete_debt_db(juan_id)
 
 
 def test_execute_option_delete_debt(monkeypatch):
     add_debt_db("Juan", 5000, 1000)
 
-    inputs = iter(["Juan"])
+    juan_id = None
+    debts = get_debts()
+
+    for debt in debts:
+        if debt["person"] == "Juan":
+            juan_id = debt["id"]
+
+    inputs = iter([juan_id])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     execute_option("3")
 
     debts = get_debts()
 
-    assert not any(debt["person"] == "Juan" for debt in debts)
+    assert not any(debt["id"] == juan_id for debt in debts)
 
 
 def test_execute_option_delete_debt_not_found(monkeypatch, capsys):
     add_debt_db("Juan", 5000, 1000)
 
-    inputs = iter(["Pedro"])
+    add_debt_db("Juan", 5000, 1000)
+
+    debts = get_debts()
+
+    juan_id = None
+
+    for debt in debts:
+        if debt["person"] == "Juan":
+            juan_id = debt["id"]
+
+    inputs = iter(["99999999999"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     result = execute_option("3")
@@ -257,17 +279,24 @@ def test_execute_option_delete_debt_not_found(monkeypatch, capsys):
 
     captured = capsys.readouterr()
 
-    assert "No se encontró ninguna deuda para Pedro" in captured.out
+    assert "No se encontró ninguna deuda con el id: 99999999999" in captured.out
     assert result is False
-    assert any(debt["person"] == "Juan" for debt in debts)
+    assert any(debt["id"] == juan_id for debt in debts)
 
-    delete_debt_db("Juan")
+    delete_debt_db(juan_id)
 
 
 def test_execute_option_update_debt(monkeypatch):
     add_debt_db("Juan", 5000, 1000)
+    debts = get_debts()
 
-    inputs = iter(["Juan", "7000", "2500"])
+    juan_id = None
+    
+    for debt in debts:
+        if debt["person"] == "Juan":
+            juan_id = debt["id"]
+
+    inputs = iter([juan_id, "7000", "2500"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     execute_option("4")
@@ -275,19 +304,27 @@ def test_execute_option_update_debt(monkeypatch):
     debts = get_debts()
 
     assert any(
-        debt["person"] == "Juan"
+        debt["id"] == juan_id
         and debt["amount"] == 7000
         and debt["paid"] == 2500
         for debt in debts
     )
 
-    delete_debt_db("Juan")
+    delete_debt_db(juan_id)
 
 
 def test_execute_option_update_debt_not_found(monkeypatch, capsys):
     add_debt_db("Juan", 5000, 1000)
+    debts = get_debts()
 
-    inputs = iter(["Pedro", "7000", "2500"])
+    juan_id = None
+    
+    for debt in debts:
+        if debt["person"] == "Juan":
+            juan_id = debt["id"]
+
+
+    inputs = iter([99999999, "7000", "2500"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     result = execute_option("4")
@@ -296,7 +333,7 @@ def test_execute_option_update_debt_not_found(monkeypatch, capsys):
 
     captured = capsys.readouterr()
 
-    assert "No se encontró ninguna deuda para Pedro" in captured.out
+    assert "No se encontró ninguna deuda con el id: 99999999" in captured.out
     assert result is False
     assert any(
         debt["person"] == "Juan"
@@ -305,20 +342,7 @@ def test_execute_option_update_debt_not_found(monkeypatch, capsys):
         for debt in debts
     )
 
-    delete_debt_db("Juan")
-
-
-def test_execute_option_update_debt_empty_person(monkeypatch, capsys):
-    inputs = iter([""])
-
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-
-    result = execute_option("4")
-
-    captured = capsys.readouterr()
-
-    assert "El nombre de la persona no puede estar vacío." in captured.out
-    assert result is False
+    delete_debt_db(juan_id)
 
 
 def test_show_menu(capsys):
@@ -346,7 +370,7 @@ def test_add_debt_action_value_error(monkeypatch, capsys):
 
 
 def test_update_debt_action_value_error(monkeypatch, capsys):
-    inputs = iter(["Juan", "-7000", "2500"])
+    inputs = iter([168, "-7000", "2500"])
 
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
