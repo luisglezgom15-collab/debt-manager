@@ -42,9 +42,20 @@ def add_debt(person, amount, paid, database=DB_NAME):
         with connection.cursor() as cursor:
 
             cursor.execute(
-                "INSERT INTO debts (person, amount, paid) VALUES (%s, %s, %s)",
-                (person, amount, paid)
+                "INSERT INTO debts (person, amount, paid) VALUES (%s, %s, %s)  RETURNING id, person, amount, paid",
+                (person, amount, paid), 
             )
+
+            row = cursor.fetchone()
+
+            id, person, amount, paid = row
+
+            return {
+                "id": id,
+                "person": person,
+                "amount": amount,
+                "paid": paid
+            }
 
 def update_debt(id, new_amount, new_paid, database=DB_NAME):
     with get_connection(database) as connection:
@@ -72,3 +83,27 @@ def delete_debt(id, database=DB_NAME):
             deleted = cursor.rowcount
 
     return deleted > 0
+
+def get_debt_for_id(id, database=DB_NAME):
+    with get_connection(database) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM debts WHERE id = %s", (id,))
+
+            row = cursor.fetchone()
+
+
+            if row is None:
+             return None
+        
+            id, person, amount, paid = row
+
+            return ({
+                "id": id,
+                "person": person,
+                "amount": amount,
+                "paid": paid
+            })
+
+
+
+            
