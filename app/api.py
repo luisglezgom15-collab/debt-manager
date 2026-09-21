@@ -1,8 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field, model_validator
-from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt
+from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
 
 app = FastAPI()
+
+class Debt(BaseModel):
+    id: int
+    person: str
+    amount: int
+    paid: int
 
 class DebtCreate(BaseModel):
     person: str
@@ -20,7 +26,9 @@ class DebtCreate(BaseModel):
 class DebtUpdate(BaseModel):
     amount: int = Field(gt=0)
     paid: int = Field(ge=0)
-    
+
+def get_db():
+    return DB_NAME
 
 @app.get("/hello")
 def say_hello():
@@ -28,14 +36,14 @@ def say_hello():
         "message": "Hello Debt Manager"
     }
 
-@app.get("/debts")
-def api_get_debts():
-    return get_debts()
+@app.get("/debts", response_model=list[Debt])
+def api_get_debts(database: str = Depends(get_db)):
+    return get_debts(database)
 
-@app.get("/debts/{id}")
-def api_get_debts_for_id(id):
+@app.get("/debts/{id}", response_model=Debt)
+def api_get_debt_for_id(id: int, database: str = Depends(get_db)):
 
-    debt = get_debt_for_id(id)
+    debt = get_debt_for_id(id, database)
 
     if debt is None:
         raise HTTPException(
@@ -45,14 +53,14 @@ def api_get_debts_for_id(id):
     
     return debt
 
-@app.post("/debts", status_code=201)
-def api_add_debt(debt: DebtCreate):
-    return add_debt(debt.person, debt.amount, debt.paid)
+@app.post("/debts", status_code=201, response_model=Debt)
+def api_add_debt(debt: DebtCreate, database: str = Depends(get_db)):
+    return add_debt(debt.person, debt.amount, debt.paid, database=database)
 
 @app.delete("/debts/{id}")
-def api_delete_debts(id):
+def api_delete_debt(id: int, database: str = Depends(get_db)):
 
-    deleted = delete_debt(id)
+    deleted = delete_debt(id, database=database)
 
     if deleted is False:
         raise HTTPException(
@@ -63,9 +71,9 @@ def api_delete_debts(id):
     return deleted
 
 @app.put("/debts/{id}")
-def api_update_debt(id, debt: DebtUpdate):
+def api_update_debt(id:int, debt: DebtUpdate, database: str = Depends(get_db)):
 
-    updated = update_debt(id, debt.amount, debt.paid)
+    updated = update_debt(id, debt.amount, debt.paid, database=database)
 
     if updated is False:
         raise HTTPException(
