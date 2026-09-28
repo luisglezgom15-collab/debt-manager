@@ -62,14 +62,21 @@ def update_debt(id, new_amount, new_paid, database=DB_NAME):
         with connection.cursor() as cursor:
 
             cursor.execute(
-                "UPDATE debts SET amount = %s, paid = %s WHERE id = %s",
+                "UPDATE debts SET amount = %s, paid = %s WHERE id = %s RETURNING id, person, amount, paid", 
                 (new_amount, new_paid, id)
             )
 
-            updated = cursor.rowcount
+            updated = cursor.fetchone()
 
+            if updated is None:
+                return None
 
-    return updated > 0
+            return {
+                "id": updated[0],
+                "person": updated[1],
+                "amount": updated[2],
+                "paid": updated[3]
+            }
 
 def delete_debt(id, database=DB_NAME):
     with get_connection(database) as connection:

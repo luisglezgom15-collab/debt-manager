@@ -74,7 +74,7 @@ def test_delete_debt(ana_debt):
 def test_update_debt_not_found():
     result = update_debt(99999900, 5000, 2000, "debt_manager_test")
 
-    assert result is False
+    assert result is None
 
 def test_delete_debt_not_found():
     result = delete_debt(99999900, "debt_manager_test")

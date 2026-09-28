@@ -108,7 +108,11 @@ def test_update_debt(empty_test_db):
     response = client.put(f"/debts/{debt_id}",json={"amount": 50000, "paid": 49000})
 
     assert response.status_code == 200
-    assert response.json() is True
+    assert response.json()["person"] == "Update"
+    assert response.json()["amount"] == 50000
+    assert response.json()["paid"] == 49000
+    assert response.json()["id"] == debt_id
+
 
 def test_update_debt_not_found():
     response = client.put(
@@ -130,7 +134,7 @@ def test_delete_debt(empty_test_db):
 
     response_delete = client.delete(f"/debts/{debt_id}")
 
-    assert response_delete.status_code == 200
+    assert response_delete.status_code == 204
 
     response = client.get(f"/debts/{debt_id}")
 
