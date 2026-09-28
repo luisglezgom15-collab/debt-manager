@@ -110,7 +110,3 @@ def get_debt_for_id(id, database=DB_NAME):
                 "amount": amount,
                 "paid": paid
             })
-
-
-
-            

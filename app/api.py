@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ConfigDict
 from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
 
 app = FastAPI(
@@ -15,6 +15,16 @@ class Debt(BaseModel):
     paid: int
 
 class DebtCreate(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={ 
+            "example": {
+                "person": "Juan",
+                "amount": 5000,
+                "paid": 1000
+            }
+        }
+    )
+
     person: str
     amount: int = Field(gt=0)
     paid: int = Field(ge=0)
@@ -26,8 +36,16 @@ class DebtCreate(BaseModel):
 
         return self
 
-
 class DebtUpdate(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={ 
+            "example": {
+                "amount": 5000,
+                "paid": 1000
+            }
+        }
+    )
+
     amount: int = Field(gt=0)
     paid: int = Field(ge=0)
 
@@ -40,12 +58,33 @@ def say_hello():
         "message": "Hello Debt Manager"
     }
 
-@app.get("/debts", response_model=list[Debt], summary="Obtener todas las deudas", description="Devuelve todas las deudas registradas en el sistema.")
-def api_get_debts(database: str = Depends(get_db)):
+@app.get(
+    "/debts", 
+    response_model=list[Debt], 
+    summary="Obtener todas las deudas", description="Devuelve todas las deudas registradas en el sistema."
+)
+
+def api_get_debts(
+    database: str = Depends(get_db)
+):
+
     return get_debts(database)
 
-@app.get("/debts/{id}", response_model=Debt, summary="Obtener una deuda por ID", description="Devuelve la deuda correspondiente al ID proporcionado.")
-def api_get_debt_for_id(id: int, database: str = Depends(get_db)):
+@app.get(
+    "/debts/{id}", 
+    response_model=Debt, 
+    summary="Obtener una deuda por ID", description="Devuelve la deuda correspondiente al ID proporcionado.", 
+    responses={
+        404:{
+            "description": "Deuda no encontrada"
+        }
+    }
+)
+
+def api_get_debt_for_id(
+    id: int, 
+    database: str = Depends(get_db)
+):
 
     debt = get_debt_for_id(id, database)
 
@@ -57,14 +96,45 @@ def api_get_debt_for_id(id: int, database: str = Depends(get_db)):
     
     return debt
 
-@app.post("/debts", status_code=201, response_model=Debt, summary="Crear deuda", description="Crea una deuda con los datos de person, amount y paid.")
-def api_add_debt(debt: DebtCreate, database: str = Depends(get_db)):
-    return add_debt(debt.person, debt.amount, debt.paid, database=database)
+@app.post(
+    "/debts", 
+    status_code=201, 
+    response_model=Debt, summary="Crear deuda", description="Crea una deuda con los datos de person, amount y paid."
+)
 
-@app.delete("/debts/{id}", status_code=204, summary="Eliminar deuda", description="Elimina la deuda correspondiente al ID proporcionado.")
-def api_delete_debt(id: int, database: str = Depends(get_db)):
+def api_add_debt(
+    debt: DebtCreate, 
+    database: str = Depends(get_db)
+):
 
-    deleted = delete_debt(id, database=database)
+    return add_debt(
+        debt.person, 
+        debt.amount, 
+        debt.paid, 
+        database=database
+    )
+
+@app.delete(
+    "/debts/{id}", 
+    status_code=204, 
+    summary="Eliminar deuda", 
+    description="Elimina la deuda correspondiente al ID proporcionado.",
+    responses={
+        404: {
+            "description": "Deuda no encontrada"
+        }
+    }
+)
+
+def api_delete_debt(
+    id: int, 
+    database: str = Depends(get_db)
+):
+
+    deleted = delete_debt(
+        id, 
+        database=database
+    )
 
     if deleted is False:
         raise HTTPException(
@@ -73,10 +143,30 @@ def api_delete_debt(id: int, database: str = Depends(get_db)):
         )
 
 
-@app.put("/debts/{id}", response_model=Debt, summary="Actualizar deuda", description="Actualiza los valores de amount y paid de la deuda con el ID seleccionado.")
-def api_update_debt(id:int, debt: DebtUpdate, database: str = Depends(get_db), ):
+@app.put(
+    "/debts/{id}", 
+    response_model=Debt, 
+    summary="Actualizar deuda", 
+    description="Actualiza los valores de amount y paid de la deuda con el ID seleccionado.",
+    responses={
+        404:{
+            "description": "Deuda no encontrada"
+        }
+    }
+)
 
-    updated = update_debt(id, debt.amount, debt.paid, database=database)
+def api_update_debt(
+    id:int, 
+    debt: DebtUpdate, 
+    database: str = Depends(get_db)
+):
+
+    updated = update_debt(
+        id, 
+        debt.amount, 
+        debt.paid, 
+        database=database
+    )
 
     if updated is None:
         raise HTTPException(
