@@ -1,12 +1,21 @@
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field, model_validator, ConfigDict
 from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Debt Manager API",
     description="API para la gestión de deudas personales",
     version="1.0.0"
     )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Debt(BaseModel):
     id: int
