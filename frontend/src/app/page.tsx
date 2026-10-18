@@ -14,6 +14,13 @@ const [debts, setDebts] = useState<Debt[]>([]);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState<string | null>(null);
 
+const [person, setPerson] = useState("");
+const [amount, setAmount] = useState("");
+const [paid, setPaid] = useState("");
+const [formMessage, setFormMessage] = useState<string | null>(null);
+const [saving, setSaving] = useState(false);
+const [showForm, setShowForm] = useState(false);
+
 const loadDebts = useCallback(() => {
   setLoading(true);
   setError(null);
@@ -118,10 +125,122 @@ const paidPercentage =
           <h2>
             Mis registros
           </h2>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-            Agregar deuda
+          <button
+            type="button"
+            onClick={() => setShowForm(!showForm)}
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            {showForm ? "Cancelar" : "Agregar deuda"}
           </button>
         </header>
+        {showForm && (
+          <form onSubmit={async (event) => {
+            event.preventDefault();
+            if (saving) return;
+
+            setSaving(true);
+            setFormMessage(null);
+
+            const newDebt = {
+              person,
+              amount: Number(amount),
+              paid: Number(paid),
+            };
+
+            try {
+              const response = await fetch("http://127.0.0.1:8000/debts", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newDebt),
+              });
+
+              if (!response.ok) {
+                throw new Error("No se pudo guardar la deuda");
+              }
+
+              const createdDebt: Debt = await response.json();
+
+              setDebts((currentDebts) => [createdDebt, ...currentDebts]);
+
+              setPerson("");
+              setAmount("");
+              setPaid("");
+
+              setFormMessage("¡Deuda guardada correctamente!");
+            } catch (error) {
+              console.error("Error al guardar la deuda:", error);
+              setFormMessage("No se pudo guardar la deuda. Intenta nuevamente.");
+            } finally {
+              setSaving(false);
+            }
+          }} className="mt-6 rounded-xl bg-white p-6 shadow-sm space-y-4">
+          <h3 className="text-lg font-semibold">
+            Registrar nueva deuda
+          </h3>
+
+          {formMessage && (
+          <p className="text-sm">
+            {formMessage}
+          </p>
+          )}
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Persona o acreedor
+            </label>
+            <input
+              type="text"
+              required
+              value={person}
+              onChange={(event) => setPerson(event.target.value)}
+              className="w-full rounded-md border  border-slate-300 p-2"
+              placeholder="Ej. Banco o persona" 
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Monto total
+            </label>
+            <input
+              type="number"
+              required
+              min="0.01"
+              step="0.01"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              className="w-full rounded-md border border-slate-300 p-2"
+              placeholder="10000"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Monto pagado inicialmente
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="0.01"
+              value={paid}
+              onChange={(event) => setPaid(event.target.value)}
+              className="w-full rounded-md border border-slate-300 p-2"
+              placeholder="0"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? "Guardando..." : "Guardar deuda"}
+          </button>
+        </form> 
+        )}
         <div className="mt-4 space-y-4">
           {loading ? (
             <p>Cargando deudas...</p>
