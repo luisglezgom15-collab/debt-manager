@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from pydantic import BaseModel, Field, model_validator, ConfigDict, field_serializer
 from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
 from fastapi.middleware.cors import CORSMiddleware
+from decimal import Decimal
 
 app = FastAPI(
     title="Debt Manager API",
@@ -20,23 +21,27 @@ app.add_middleware(
 class Debt(BaseModel):
     id: int
     person: str
-    amount: int
-    paid: int
+    amount: Decimal
+    paid: Decimal
+
+    @field_serializer("amount", "paid", when_used="json")
+    def serialize_money(self, value: Decimal) -> float:
+        return float(value)
 
 class DebtCreate(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "person": "Juan",
-                "amount": 5000,
-                "paid": 1000
+                "amount": 5000.00,
+                "paid": 1000.00
             }
         }
     )
 
     person: str
-    amount: int = Field(gt=0)
-    paid: int = Field(ge=0)
+    amount: Decimal = Field(gt=0)
+    paid: Decimal = Field(ge=0)
 
     @model_validator(mode="after")
     def validate_debt(self):
@@ -50,15 +55,15 @@ class DebtUpdate(BaseModel):
         json_schema_extra={
             "example": {
                 "person": "Juan",
-                "amount": 5000,
-                "paid": 1000
+                "amount": 5000.00,
+                "paid": 1000.00
             }
         }
     )
 
     person: str | None = None
-    amount: int = Field(gt=0)
-    paid: int = Field(ge=0)
+    amount: Decimal = Field(gt=0)
+    paid: Decimal = Field(ge=0)
 
 def get_db():
     return DB_NAME

@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 
 from app.api import app, get_db
 
-from app.database import add_debt, get_connection
+from app.database import add_debt, get_connection, get_debt_for_id
 
 import pytest
 
@@ -83,6 +83,30 @@ def test_create_debt(empty_test_db):
         for debt in response.json()
     )
 
+def test_create_debt_with_cents(empty_test_db):
+    response = client.post(
+        "/debts",
+        json={
+            "person": "Robert",
+            "amount": 2000.50,
+            "paid": 300.25
+        }
+    )
+
+    assert response.status_code == 201
+    assert response.json()["amount"] == 2000.50
+    assert response.json()["paid"] == 300.25
+
+    response = client.get("/debts")
+
+    robert_debt = next(
+        debt for debt in response.json()
+        if debt["person"] == "Robert"
+    )
+
+    assert robert_debt["amount"] == 2000.50
+    assert robert_debt["paid"] == 300.25
+
 def test_create_debt_invalid():
     response = client.post(
         "/debts",
@@ -113,6 +137,35 @@ def test_update_debt(empty_test_db):
     assert response.json()["paid"] == 49000
     assert response.json()["id"] == debt_id
 
+def test_update_debt_with_cents(empty_test_db):
+    debt = add_debt(
+        "Update cents",
+        1000,
+        100,
+        database="debt_manager_test"
+    )
+
+    debt_id = debt["id"]
+
+    response = client.put(
+        f"/debts/{debt_id}",
+        json={
+            "amount": 2500.75,
+            "paid": 1250.25
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json()["amount"] == 2500.75
+    assert response.json()["paid"] == 1250.25
+
+    updated_debt = get_debt_for_id(
+        debt_id,
+        database="debt_manager_test"
+    )
+
+    assert float(updated_debt["amount"]) == 2500.75
+    assert float(updated_debt["paid"]) == 1250.25
 
 def test_update_debt_not_found():
     response = client.put(
