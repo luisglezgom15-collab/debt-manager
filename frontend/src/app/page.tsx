@@ -86,27 +86,25 @@ const handleDeleteDebt = async (id: number) => {
 };
 
 useEffect(() => {
-  loadDebts();
-}, [loadDebts]);
+  fetch("http://127.0.0.1:8000/debts")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("No se pudieron obtener las deudas");
+      }
 
-useEffect(() => {
-  if (editingDebtId === null) {
-    return;
-  }
-
-  const selectedDebt = debts.find(
-    (debt) => debt.id === editingDebtId
-  );
-
-  if (!selectedDebt) {
-    return;
-  }
-
-  setPerson(selectedDebt.person);
-  setAmount(String(selectedDebt.amount));
-  setPaid(String(selectedDebt.paid));
-}, [editingDebtId, debts]);
-
+      return response.json();
+    })
+    .then((data: Debt[]) => {
+      setDebts(data);
+    })
+    .catch((error) => {
+      console.error("Error al cargar las deudas:", error);
+      setError("No pudimos cargar tus deudas. Intenta nuevamente.");
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, []);
 
 useEffect(() => {
   if (!showForm) {
@@ -282,6 +280,9 @@ const paidPercentage =
                     type="button"
                     onClick={() => {
                       setEditingDebtId(debt.id);
+                      setPerson(debt.person);
+                      setAmount(String(debt.amount));
+                      setPaid(String(debt.paid));
                       setFormMessage(null);
                       setShowForm(true);
                     }}
