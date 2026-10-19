@@ -43,7 +43,7 @@ def add_debt(person, amount, paid, database=DB_NAME):
 
             cursor.execute(
                 "INSERT INTO debts (person, amount, paid) VALUES (%s, %s, %s)  RETURNING id, person, amount, paid",
-                (person, amount, paid), 
+                (person, amount, paid),
             )
 
             row = cursor.fetchone()
@@ -57,14 +57,26 @@ def add_debt(person, amount, paid, database=DB_NAME):
                 "paid": paid
             }
 
-def update_debt(id, new_amount, new_paid, database=DB_NAME):
+
+def update_debt(id, new_amount, new_paid, database=DB_NAME, new_person=None):
     with get_connection(database) as connection:
         with connection.cursor() as cursor:
-
-            cursor.execute(
-                "UPDATE debts SET amount = %s, paid = %s WHERE id = %s RETURNING id, person, amount, paid", 
-                (new_amount, new_paid, id)
-            )
+            if new_person is None:
+                cursor.execute(
+                    """UPDATE debts
+                    SET amount = %s, paid = %s
+                    WHERE id = %s
+                    RETURNING id, person, amount, paid""",
+                    (new_amount, new_paid, id)
+                )
+            else:
+                cursor.execute(
+                    """UPDATE debts
+                    SET person = %s, amount = %s, paid = %s
+                    WHERE id = %s
+                    RETURNING id, person, amount, paid""",
+                    (new_person, new_amount, new_paid, id)
+                )
 
             updated = cursor.fetchone()
 
@@ -75,8 +87,9 @@ def update_debt(id, new_amount, new_paid, database=DB_NAME):
                 "id": updated[0],
                 "person": updated[1],
                 "amount": updated[2],
-                "paid": updated[3]
+                "paid": updated[3],
             }
+
 
 def delete_debt(id, database=DB_NAME):
     with get_connection(database) as connection:
@@ -101,7 +114,7 @@ def get_debt_for_id(id, database=DB_NAME):
 
             if row is None:
              return None
-        
+
             id, person, amount, paid = row
 
             return ({

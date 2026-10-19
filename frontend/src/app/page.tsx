@@ -21,6 +21,8 @@ const [formMessage, setFormMessage] = useState<string | null>(null);
 const [saving, setSaving] = useState(false);
 const [showForm, setShowForm] = useState(false);
 
+const [editingDebtId, setEditingDebtId] = useState<number | null>(null);
+
 const loadDebts = useCallback(() => {
   setLoading(true);
   setError(null);
@@ -49,6 +51,49 @@ useEffect(() => {
   loadDebts();
 }, [loadDebts]);
 
+useEffect(() => {
+  if (editingDebtId === null) {
+    return;
+  }
+
+  const selectedDebt = debts.find(
+    (debt) => debt.id === editingDebtId
+  );
+
+  if (!selectedDebt) {
+    return;
+  }
+
+  setPerson(selectedDebt.person);
+  setAmount(String(selectedDebt.amount));
+  setPaid(String(selectedDebt.paid));
+}, [editingDebtId, debts]);
+
+
+useEffect(() => {
+  if (!showForm) {
+    return;
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape" && !saving) {
+      setShowForm(false);
+      setEditingDebtId(null);
+      setPerson("");
+      setAmount("");
+      setPaid("");
+      setFormMessage(null);
+    }
+  }
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [showForm, saving]);
+
+
 const currencyFormatter = new Intl.NumberFormat("es-MX", {
   style: "currency",
   currency: "MXN",
@@ -62,14 +107,14 @@ const totalPaid = debts.reduce((total, debt) => {
   return total + debt.paid;
 }, 0);
 
-const paidPercentage = 
+const paidPercentage =
   totalDebt > 0 ? (totalPaid / totalDebt) * 100 : 0;
 
   return (
     <main className="min-h-screen bg-slate-50 p-8">
       <header className= "flex items-center justify-between">
         <h1 className="text-3xl font-bold">
-          Debt Manager 
+          Debt Manager
         </h1>
       </header>
 
@@ -127,120 +172,25 @@ const paidPercentage =
           </h2>
           <button
             type="button"
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              if (showForm) {
+                setShowForm(false);
+                setEditingDebtId(null);
+                setPerson("");
+                setAmount("");
+                setPaid("");
+                setFormMessage(null);
+              } else {
+                setEditingDebtId(null);
+                setFormMessage(null);
+                setShowForm(true);
+              }
+            }}
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
-            {showForm ? "Cancelar" : "Agregar deuda"}
+            Agregar deuda
           </button>
         </header>
-        {showForm && (
-          <form onSubmit={async (event) => {
-            event.preventDefault();
-            if (saving) return;
-
-            setSaving(true);
-            setFormMessage(null);
-
-            const newDebt = {
-              person,
-              amount: Number(amount),
-              paid: Number(paid),
-            };
-
-            try {
-              const response = await fetch("http://127.0.0.1:8000/debts", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newDebt),
-              });
-
-              if (!response.ok) {
-                throw new Error("No se pudo guardar la deuda");
-              }
-
-              const createdDebt: Debt = await response.json();
-
-              setDebts((currentDebts) => [createdDebt, ...currentDebts]);
-
-              setPerson("");
-              setAmount("");
-              setPaid("");
-
-              setFormMessage("¡Deuda guardada correctamente!");
-            } catch (error) {
-              console.error("Error al guardar la deuda:", error);
-              setFormMessage("No se pudo guardar la deuda. Intenta nuevamente.");
-            } finally {
-              setSaving(false);
-            }
-          }} className="mt-6 rounded-xl bg-white p-6 shadow-sm space-y-4">
-          <h3 className="text-lg font-semibold">
-            Registrar nueva deuda
-          </h3>
-
-          {formMessage && (
-          <p className="text-sm">
-            {formMessage}
-          </p>
-          )}
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Persona o acreedor
-            </label>
-            <input
-              type="text"
-              required
-              value={person}
-              onChange={(event) => setPerson(event.target.value)}
-              className="w-full rounded-md border  border-slate-300 p-2"
-              placeholder="Ej. Banco o persona" 
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Monto total
-            </label>
-            <input
-              type="number"
-              required
-              min="0.01"
-              step="0.01"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              className="w-full rounded-md border border-slate-300 p-2"
-              placeholder="10000"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Monto pagado inicialmente
-            </label>
-            <input
-              type="number"
-              required
-              min="0"
-              step="0.01"
-              value={paid}
-              onChange={(event) => setPaid(event.target.value)}
-              className="w-full rounded-md border border-slate-300 p-2"
-              placeholder="0"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? "Guardando..." : "Guardar deuda"}
-          </button>
-        </form> 
-        )}
         <div className="mt-4 space-y-4">
           {loading ? (
             <p>Cargando deudas...</p>
@@ -284,12 +234,176 @@ const paidPercentage =
                       style={{ width: `${debtPercentage}%` }}
                     />
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => { setEditingDebtId(debt.id);
+                      setShowForm(true);
+                    }}
+                    className="mt-4 rounded-md bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+                  >
+                    Editar
+                  </button>
                 </article>
               );
             })
           )}
         </div>
       </section>
+        {showForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form onSubmit={async (event) => {
+            event.preventDefault();
+            if (saving) return;
+
+            setSaving(true);
+            setFormMessage(null);
+
+            const newDebt = {
+              person,
+              amount: Number(amount),
+              paid: Number(paid),
+            };
+
+            try {
+              const url =
+                editingDebtId !== null
+                  ? `http://127.0.0.1:8000/debts/${editingDebtId}`
+                  : "http://127.0.0.1:8000/debts";
+
+              const response = await fetch(url, {
+                method: editingDebtId !== null ? "PUT" : "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newDebt),
+              });
+
+              if (!response.ok) {
+                throw new Error("No se pudo guardar la deuda");
+              }
+
+              const savedDebt: Debt = await response.json();
+
+              if (editingDebtId !== null) {
+                setDebts((currentDebts) =>
+                  currentDebts.map((debt) =>
+                    debt.id === savedDebt.id ? savedDebt : debt
+                  )
+                );
+
+                setFormMessage("¡Deuda actualizada correctamente!");
+              } else {
+                setDebts((currentDebts) => [savedDebt, ...currentDebts]);
+
+                setFormMessage("¡Deuda guardada correctamente!");
+              }
+
+              setPerson("");
+              setAmount("");
+              setPaid("");
+
+              setShowForm(false);
+              setEditingDebtId(null);
+            } catch (error) {
+              console.error("Error al guardar la deuda:", error);
+              setFormMessage("No se pudo guardar la deuda. Intenta nuevamente.");
+            } finally {
+              setSaving(false);
+            }
+          }} className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl space-y-4">
+
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
+              {editingDebtId !== null
+                ? "Editar deuda"
+                : "Registrar nueva deuda"}
+            </h3>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                setEditingDebtId(null);
+                setPerson("");
+                setAmount("");
+                setPaid("");
+                setFormMessage(null);
+              }}
+              className="rounded-md px-3 py-1 text-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              aria-label="Cerrar formulario"
+            >
+              ×
+            </button>
+          </div>
+
+          {formMessage && (
+          <p className="text-sm">
+            {formMessage}
+          </p>
+          )}
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Persona o acreedor
+            </label>
+            <input
+              type="text"
+              required
+              value={person}
+              onChange={(event) => setPerson(event.target.value)}
+              className="w-full rounded-md border  border-slate-300 p-2"
+              placeholder="Ej. Banco o persona"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Monto total
+            </label>
+            <input
+              type="number"
+              required
+              min="0.01"
+              step="0.01"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              className="w-full rounded-md border border-slate-300 p-2"
+              placeholder="10000"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Monto pagado inicialmente
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="0.01"
+              value={paid}
+              onChange={(event) => setPaid(event.target.value)}
+              className="w-full rounded-md border border-slate-300 p-2"
+              placeholder="0"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving
+              ? editingDebtId !== null
+                ? "Guardando cambios..."
+                : "Guardando..."
+              : editingDebtId !== null
+                ? "Guardar cambios"
+                : "Guardar deuda"}
+          </button>
+        </form>
+        </div>
+      )}
     </main>
   );
 }

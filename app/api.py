@@ -25,7 +25,7 @@ class Debt(BaseModel):
 
 class DebtCreate(BaseModel):
     model_config = ConfigDict(
-        json_schema_extra={ 
+        json_schema_extra={
             "example": {
                 "person": "Juan",
                 "amount": 5000,
@@ -47,14 +47,16 @@ class DebtCreate(BaseModel):
 
 class DebtUpdate(BaseModel):
     model_config = ConfigDict(
-        json_schema_extra={ 
+        json_schema_extra={
             "example": {
+                "person": "Juan",
                 "amount": 5000,
                 "paid": 1000
             }
         }
     )
 
+    person: str | None = None
     amount: int = Field(gt=0)
     paid: int = Field(ge=0)
 
@@ -68,8 +70,8 @@ def say_hello():
     }
 
 @app.get(
-    "/debts", 
-    response_model=list[Debt], 
+    "/debts",
+    response_model=list[Debt],
     summary="Obtener todas las deudas", description="Devuelve todas las deudas registradas en el sistema."
 )
 
@@ -80,9 +82,9 @@ def api_get_debts(
     return get_debts(database)
 
 @app.get(
-    "/debts/{id}", 
-    response_model=Debt, 
-    summary="Obtener una deuda por ID", description="Devuelve la deuda correspondiente al ID proporcionado.", 
+    "/debts/{id}",
+    response_model=Debt,
+    summary="Obtener una deuda por ID", description="Devuelve la deuda correspondiente al ID proporcionado.",
     responses={
         404:{
             "description": "Deuda no encontrada"
@@ -91,7 +93,7 @@ def api_get_debts(
 )
 
 def api_get_debt_for_id(
-    id: int, 
+    id: int,
     database: str = Depends(get_db)
 ):
 
@@ -102,31 +104,31 @@ def api_get_debt_for_id(
             status_code=404,
             detail="No se encontro ninguna deuda con ese ID"
         )
-    
+
     return debt
 
 @app.post(
-    "/debts", 
-    status_code=201, 
+    "/debts",
+    status_code=201,
     response_model=Debt, summary="Crear deuda", description="Crea una deuda con los datos de person, amount y paid."
 )
 
 def api_add_debt(
-    debt: DebtCreate, 
+    debt: DebtCreate,
     database: str = Depends(get_db)
 ):
 
     return add_debt(
-        debt.person, 
-        debt.amount, 
-        debt.paid, 
+        debt.person,
+        debt.amount,
+        debt.paid,
         database=database
     )
 
 @app.delete(
-    "/debts/{id}", 
-    status_code=204, 
-    summary="Eliminar deuda", 
+    "/debts/{id}",
+    status_code=204,
+    summary="Eliminar deuda",
     description="Elimina la deuda correspondiente al ID proporcionado.",
     responses={
         404: {
@@ -136,12 +138,12 @@ def api_add_debt(
 )
 
 def api_delete_debt(
-    id: int, 
+    id: int,
     database: str = Depends(get_db)
 ):
 
     deleted = delete_debt(
-        id, 
+        id,
         database=database
     )
 
@@ -153,10 +155,10 @@ def api_delete_debt(
 
 
 @app.put(
-    "/debts/{id}", 
-    response_model=Debt, 
-    summary="Actualizar deuda", 
-    description="Actualiza los valores de amount y paid de la deuda con el ID seleccionado.",
+    "/debts/{id}",
+    response_model=Debt,
+    summary="Actualizar deuda",
+    description="Actualiza los valores de person, amount y paid de la deuda con el ID seleccionado.",
     responses={
         404:{
             "description": "Deuda no encontrada"
@@ -165,16 +167,17 @@ def api_delete_debt(
 )
 
 def api_update_debt(
-    id:int, 
-    debt: DebtUpdate, 
+    id:int,
+    debt: DebtUpdate,
     database: str = Depends(get_db)
 ):
 
     updated = update_debt(
-        id, 
-        debt.amount, 
-        debt.paid, 
-        database=database
+        id,
+        debt.amount,
+        debt.paid,
+        database=database,
+        new_person=debt.person
     )
 
     if updated is None:

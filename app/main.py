@@ -61,13 +61,17 @@ def update_debt_action():
     debt_id = get_integer("Ingrese el id de la deuda: ")
     if not debt_id:
         print("El id de la deuda no puede estar vacío.")
-        return 
+        return
     try:
         update_data = get_update_data()
     except ValueError as error:
         print(error)
-        return 
-    if update_debt_db(debt_id, update_data["new_amount"], update_data["new_paid"]):
+        return
+    if update_debt_db(
+        debt_id,
+        update_data["new_amount"],
+        update_data["new_paid"]
+    ):
         print(f"Deuda con id: {debt_id} actualizada, Monto = {update_data['new_amount']}, Pagado = {update_data['new_paid']}")
     else:
         print(f"No se encontró ninguna deuda con el id: {debt_id}")
