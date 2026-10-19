@@ -47,6 +47,44 @@ const loadDebts = useCallback(() => {
     });
 }, []);
 
+const [deletingDebtId, setDeletingDebtId] = useState<number | null>(null);
+const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
+
+const handleDeleteDebt = async (id: number) => {
+  const confirmed = window.confirm(
+    "¿Estás seguro de que deseas eliminar esta deuda? Esta acción no se puede deshacer."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  setDeletingDebtId(id);
+  setDeleteMessage(null);
+
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/debts/${id}`,
+      { method: "DELETE" }
+    );
+
+    if (!response.ok) {
+      throw new Error("No se pudo eliminar la deuda");
+    }
+
+    setDebts((currentDebts) =>
+      currentDebts.filter((debt) => debt.id !== id)
+    );
+  } catch (error) {
+    console.error("Error al eliminar la deuda:", error);
+    setDeleteMessage(
+      "No se pudo eliminar la deuda. Intenta nuevamente."
+    );
+  } finally {
+    setDeletingDebtId(null);
+  }
+};
+
 useEffect(() => {
   loadDebts();
 }, [loadDebts]);
@@ -191,6 +229,11 @@ const paidPercentage =
             Agregar deuda
           </button>
         </header>
+        {deleteMessage && (
+          <p className="mt-2 text-sm text-red-600">
+            {deleteMessage}
+          </p>
+        )}
         <div className="mt-4 space-y-4">
           {loading ? (
             <p>Cargando deudas...</p>
@@ -234,15 +277,28 @@ const paidPercentage =
                       style={{ width: `${debtPercentage}%` }}
                     />
                   </div>
+                <div className="mt-4 flex gap-2">
                   <button
                     type="button"
-                    onClick={() => { setEditingDebtId(debt.id);
+                    onClick={() => {
+                      setEditingDebtId(debt.id);
+                      setFormMessage(null);
                       setShowForm(true);
                     }}
-                    className="mt-4 rounded-md bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+                    className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                   >
                     Editar
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDebt(debt.id)}
+                    disabled={deletingDebtId === debt.id}
+                    className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {deletingDebtId === debt.id ? "Eliminando..." : "Eliminar"}
+                  </button>
+                </div>
                 </article>
               );
             })
