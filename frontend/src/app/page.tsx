@@ -1,6 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 type Debt = {
   id: number;
   person: string;
@@ -27,7 +29,7 @@ const loadDebts = useCallback(() => {
   setLoading(true);
   setError(null);
 
-  fetch("http://127.0.0.1:8000/debts")
+  fetch(`${API_URL}/debts`)
     .then((response) => {
       if (!response.ok) {
         throw new Error("No se pudieron obtener las deudas");
@@ -64,7 +66,7 @@ const handleDeleteDebt = async (id: number) => {
 
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/debts/${id}`,
+      `${API_URL}/debts/${id}`,
       { method: "DELETE" }
     );
 
@@ -86,7 +88,7 @@ const handleDeleteDebt = async (id: number) => {
 };
 
 useEffect(() => {
-  fetch("http://127.0.0.1:8000/debts")
+  fetch(`${API_URL}/debts`)
     .then((response) => {
       if (!response.ok) {
         throw new Error("No se pudieron obtener las deudas");
@@ -324,8 +326,8 @@ const paidPercentage =
             try {
               const url =
                 editingDebtId !== null
-                  ? `http://127.0.0.1:8000/debts/${editingDebtId}`
-                  : "http://127.0.0.1:8000/debts";
+                  ? `${API_URL}/debts/${editingDebtId}`
+                  : `${API_URL}/debts`;
 
               const response = await fetch(url, {
                 method: editingDebtId !== null ? "PUT" : "POST",
