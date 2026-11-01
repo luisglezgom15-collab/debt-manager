@@ -55,13 +55,17 @@ def test_add_debt(ana_debt):
     assert any(debt["person"] == "Ana" for debt in debts)
 
 def test_update_debt(ana_debt):
-    update_debt(ana_debt, 8000, 3000, "debt_manager_test")
+    update_debt(ana_debt, 8000, 3000,  database="debt_manager_test", new_person="Luis")
 
     debts = get_debts("debt_manager_test")
 
-    assert any(debt["person"] == "Ana" for debt in debts)
-    assert any(debt["amount"] == 8000 and debt["person"] == "Ana" for debt in debts)
-    assert any(debt["paid"] == 3000 and debt["person"] == "Ana" for debt in debts)
+    assert any(
+        debt["id"] == ana_debt
+        and debt["person"] == "Luis"
+        and debt["amount"] == 8000
+        and debt["paid"] == 3000
+        for debt in debts
+    )
 
 def test_delete_debt(ana_debt):
     result = delete_debt(ana_debt, "debt_manager_test")

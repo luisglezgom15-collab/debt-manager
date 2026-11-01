@@ -18,6 +18,9 @@ def test_get_hello():
     assert response.status_code == 200
     assert response.json() == {"message": "Hello Debt Manager"}
 
+def test_get_db():
+    assert get_db() == "debt_manager"
+
 @pytest.fixture
 def empty_test_db():
     with get_connection(database="debt_manager_test") as connection:

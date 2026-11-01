@@ -376,6 +376,17 @@ def test_update_debt_action_value_error(monkeypatch, capsys):
 
     assert "El monto de la deuda no puede ser cero o negativo." in captured.out
 
+def test_update_debt_action_without_id(monkeypatch, capsys):
+    inputs = iter(["", "0"])
+
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    update_debt_action()
+
+    captured = capsys.readouterr()
+
+    assert "Por favor, ingrese un número entero válido." in captured.out
+    assert "El id de la deuda no puede estar vacío." in captured.out
 
 def test_main_exit(monkeypatch):
     monkeypatch.setattr("builtins.input", lambda _: "5")
