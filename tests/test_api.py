@@ -1,9 +1,8 @@
+import os
+
 from fastapi.testclient import TestClient
-
 from app.api import app, get_db
-
 from app.database import add_debt, get_connection, get_debt_for_id
-
 import pytest
 
 client = TestClient(app)
@@ -200,3 +199,32 @@ def test_delete_debt_not_found():
     response = client.delete("/debts/99999999")
 
     assert response.status_code == 404
+
+def test_cors_allows_configured_frontend():
+    frontend_url = os.getenv(
+        "FRONTEND_URL",
+        "http://localhost:3000"
+    )
+
+    response = client.options(
+        "/debts",
+        headers={
+            "Origin": frontend_url,
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == frontend_url
+
+
+def test_cors_rejects_unconfigured_frontend():
+    response = client.options(
+        "/debts",
+        headers={
+            "Origin": "http://example.com",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+
+    assert "access-control-allow-origin" not in response.headers

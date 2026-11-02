@@ -10,9 +10,29 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
+required_variables = {
+    "DB_HOST": DB_HOST,
+    "DB_USER": DB_USER,
+    "DB_NAME": DB_NAME
+}
+
+missing_variables = [
+    variable
+    for variable, value in required_variables.items()
+    if not value
+]
+
+if missing_variables:
+    raise ValueError(
+        f"Faltan variables de entorno obligatorias: {', '.join(missing_variables)}"
+    )
+
 def get_connection(database=DB_NAME):
     return psycopg.connect(
-        f"dbname={database} host={DB_HOST} user={DB_USER} password={DB_PASSWORD}"
+        dbname=database,
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD
     )
 
 def get_debts(database=DB_NAME):

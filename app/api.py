@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field, model_validator, ConfigDict, field_serializer
 from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
@@ -12,8 +14,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
+    allow_origins=[
+        os.getenv("FRONTEND_URL", "http://localhost:3000")
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
