@@ -1,78 +1,119 @@
 # Debt Manager
 
-Debt Manager is a command-line application built with Python to manage personal debts. It allows users to create, update, delete, and view debts while keeping the data persistently stored in PostgreSQL.
+Debt Manager is a personal debt management application that allows users to register, track, update, and manage debts through a web interface.
 
-This project was created as a learning-by-building project to practice Python, database integration, testing, software architecture, and version control with Git and GitHub.
+The application provides a dashboard to monitor total debt, payments, outstanding balances, and payment progress. It uses PostgreSQL for persistent data storage and a REST API built with FastAPI to connect the backend with the frontend.
+
+This project was developed as a learning-by-building initiative to strengthen software development skills, including backend development, frontend development, database management, automated testing, and version control.
 
 ## Features
 
-* Create new debts
-* View all registered debts
-* Update existing debts
-* Delete debts
-* Calculate remaining debt
-* Detect fully paid debts
-* Detect overpayments and calculate available credit
-* Validate user input
-* Persist data using PostgreSQL
-* Automated testing with pytest
+- Create new debts
+- View all registered debts
+- Update existing debts
+- Delete debts
+- Calculate remaining debt automatically
+- Track total debt, total payments, and outstanding balances
+- Monitor payment progress through dashboard indicators
+- Validate user input and API requests
+- Persist debt records using PostgreSQL
+- Access debt management operations through a REST API
+- Automated testing with pytest
 
 ## Tech Stack
 
-* **Python** — application logic and CLI
-* **PostgreSQL** — persistent data storage
-* **Psycopg** — PostgreSQL database connection
-* **pytest** — automated testing
-* **pytest-cov** — test coverage
-* **python-dotenv** — environment variable management
-* **Git & GitHub** — version control and project management
+### Backend
+
+- **Python** — backend application logic
+- **FastAPI** — REST API development
+- **Pydantic** — data validation and serialization
+- **PostgreSQL** — relational database and persistent data storage
+- **Psycopg** — PostgreSQL database connectivity
+- **python-dotenv** — environment variable management
+
+### Frontend
+
+- **Next.js** — React framework for the web application
+- **React** — user interface development
+- **TypeScript** — static typing for JavaScript
+- **Tailwind CSS** — interface styling
+
+### Testing
+
+- **pytest** — backend automated testing
+- **pytest-cov** — test coverage measurement
+
+### Development Tools
+
+- **Git & GitHub** — version control and project management
+- **ESLint** — frontend code analysis
 
 ## Project Structure
 
 ```text
 debt-manager/
 ├── app/
-│   ├── database.py    # PostgreSQL database operations
-│   ├── debts.py       # Debt-related business logic
-│   ├── inputs.py      # CLI input and validation
-│   └── main.py        # CLI application flow
+│   ├── __init__.py
+│   ├── api.py
+│   ├── database.py
+│   ├── debts.py
+│   ├── inputs.py
+│   └── main.py
 │
 ├── tests/
+│   ├── test_api.py
 │   ├── test_database.py
 │   ├── test_debts.py
 │   └── test_main.py
 │
-├── .env.example       # Environment variable template
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   └── app/
+│   │       ├── favicon.ico
+│   │       ├── globals.css
+│   │       ├── layout.tsx
+│   │       └── page.tsx
+│   ├── .env.example
+│   ├── eslint.config.mjs
+│   ├── next.config.ts
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
+│
+├── .env.example
 ├── .gitignore
 ├── pytest.ini
 ├── requirements.txt
+├── requirements-dev.txt
 └── README.md
 ```
 
-The application is organized by responsibility:
+The project is organized into three main areas:
 
-* `main.py` handles the command-line application flow.
-* `inputs.py` handles user input and validation.
-* `debts.py` contains the application's business logic.
-* `database.py` handles communication with PostgreSQL.
-* `tests/` contains the automated test suite.
+- `app/` contains the Python backend, including the REST API, database operations, and debt management logic.
+- `frontend/` contains the Next.js application, including the user interface, page layout, styles, and static assets.
+- `tests/` contains the automated backend test suite, covering API endpoints, database operations, business logic, and CLI functionality.
 
 ## Requirements
 
 Before running the project, make sure you have installed:
 
-* Python 3.14+
-* PostgreSQL
-* Git
+- Python 3.14+
+- PostgreSQL
+- Node.js and npm
+- Git
 
 ## Installation
 
 Clone the repository and navigate to the project directory:
 
 ```bash
-git clone git@github.com:luisglezgom15-collab/debt-manager.git
+git clone https://github.com/luisglezgom15-collab/debt-manager.git
 cd debt-manager
 ```
+
+### Backend Setup
 
 Create and activate a virtual environment:
 
@@ -81,34 +122,103 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install the project dependencies:
+Install the backend dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+### Frontend Setup
+
+Navigate to the frontend directory and install the dependencies:
+
+```bash
+cd frontend
+npm ci
+```
+
+Return to the project root:
+
+```bash
+cd ..
 ```
 
 ## Environment Variables
 
+### Backend Configuration
+
 Create a `.env` file in the project root based on `.env.example`:
 
-```text
+```bash
+cp .env.example .env
+```
+
+Configure the following environment variables:
+
+```env
 DB_HOST=127.0.0.1
 DB_USER=debt_app
 DB_PASSWORD=your_password
 DB_NAME=debt_manager
 ```
 
-Do not commit the `.env` file to the repository.
+### Frontend Configuration
+
+Create a `.env.local` file inside the `frontend/` directory based on `frontend/.env.example`:
+
+```bash
+cp frontend/.env.example frontend/.env.local
+```
+
+Configure the API URL:
+
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+```
+
+Do not commit `.env` or `.env.local` files to the repository.
 
 ## Running the Application
 
-Run the application from the project root:
+### Start the Backend
+
+From the project root, activate the virtual environment and start the FastAPI server:
+
+```bash
+source .venv/bin/activate
+uvicorn app.api:app --reload
+```
+
+The backend API will be available at:
+
+`http://127.0.0.1:8000`
+
+Interactive API documentation is available at:
+
+`http://127.0.0.1:8000/docs`
+
+### Start the Frontend
+
+Open a separate terminal, navigate to the frontend directory, and start the development server:
+
+```bash
+cd frontend
+npm run dev
+```
+
+The web application will be available at:
+
+`http://localhost:3000`
+
+### Run the Command-Line Interface (CLI)
+
+Alternatively, you can run the command-line version from the project root:
 
 ```bash
 python -m app.main
 ```
 
-The application provides a command-line menu to:
+The CLI provides the following options:
 
 1. View debts
 2. Add a debt
@@ -118,43 +228,79 @@ The application provides a command-line menu to:
 
 ## Running Tests
 
-Run the complete test suite with:
+### Backend Tests
+
+Run the complete backend test suite from the project root:
 
 ```bash
-pytest
+python -m pytest -v
 ```
 
-To run the tests with coverage:
+To run the tests with code coverage:
 
 ```bash
-pytest --cov=app
+python -m pytest --cov=app --cov-report=term-missing
 ```
 
-The current test suite contains **39 tests** with **98% overall code coverage**.
+The backend test suite currently contains **53 tests**, with **99% overall code coverage**.
+
+### Frontend Checks
+
+Navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+Run TypeScript type checking:
+
+```bash
+npx tsc --noEmit
+```
+
+Build the application to verify that it compiles successfully:
+
+```bash
+npm run build
+```
 
 ## Project Status
 
-Debt Manager currently provides a functional command-line interface for managing personal debts with persistent PostgreSQL storage.
+Debt Manager currently provides a functional web application for managing personal debts, supported by a REST API and persistent PostgreSQL storage.
 
 The project includes:
 
-* CRUD operations for debts
-* Input validation
-* PostgreSQL integration
-* Automated tests
-* 98% overall code coverage
-* Environment-based configuration
-* Separation of application responsibilities
+- Full CRUD operations for debt management
+- Interactive web dashboard
+- Debt and payment tracking
+- Input validation and API request validation
+- REST API built with FastAPI
+- PostgreSQL database integration
+- Persistent data storage
+- Command-line interface (CLI)
+- Automated backend test suite with 53 tests
+- 99% overall backend code coverage
+- Frontend code quality and build checks
+- Environment-based configuration
 
-The next major development stage is the integration of **FastAPI** to expose the application's functionality through a REST API.
+The application has been tested locally, including debt creation, editing, deletion, dashboard updates, and data persistence after server restarts.
+
+The next development stage focuses on completing the deployment of Debt Manager 1.0 and preparing the project for future improvements.
 
 ## Future Improvements
 
-Planned improvements include:
+Planned improvements for future versions include:
 
-* Build a REST API with FastAPI
-* Add API testing
-* Develop a web frontend with Next.js and TypeScript
-* Containerize the application with Docker
-* Add user authentication
-* Deploy the application
+- Add user registration and authentication
+- Implement secure user-specific debt management
+- Add detailed debt payment history
+- Allow users to track individual payments over time
+- Improve dashboard analytics and financial insights
+- Containerize the application with Docker
+- Enhance the user interface and overall user experience
