@@ -1,0 +1,17 @@
+# Git
+.git/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.coverage.*
+
+# Variables de entorno
+.env
+.env.*
+
+# Archivos del sistema
+.DS_Store

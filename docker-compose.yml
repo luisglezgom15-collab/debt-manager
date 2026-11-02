@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:18
+    container_name: debt-manager-db
+    environment:
+      POSTGRES_DB: debt_manager
+      POSTGRES_USER: debt_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Debes definir DB_PASSWORD en tu archivo .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U debt_app -d debt_manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: debt-manager-backend
+    environment:
+      DB_HOST: db
+      DB_USER: debt_app
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: debt_manager
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: debt-manager-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
