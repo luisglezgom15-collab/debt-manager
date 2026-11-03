@@ -5,29 +5,36 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 DB_HOST = os.getenv("DB_HOST")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
-required_variables = {
-    "DB_HOST": DB_HOST,
-    "DB_USER": DB_USER,
-    "DB_NAME": DB_NAME
-}
+if not DATABASE_URL:
+    required_variables = {
+        "DB_HOST": DB_HOST,
+        "DB_USER": DB_USER,
+        "DB_NAME": DB_NAME
+    }
 
-missing_variables = [
-    variable
-    for variable, value in required_variables.items()
-    if not value
-]
+    missing_variables = [
+        variable
+        for variable, value in required_variables.items()
+        if not value
+    ]
 
-if missing_variables:
-    raise ValueError(
-        f"Faltan variables de entorno obligatorias: {', '.join(missing_variables)}"
-    )
+    if missing_variables:
+        raise ValueError(
+            f"Faltan variables de entorno obligatorias: {', '.join(missing_variables)}"
+        )
+
 
 def get_connection(database=DB_NAME):
+    if DATABASE_URL and (database is None or database == DB_NAME):
+        return psycopg.connect(DATABASE_URL)
+
     return psycopg.connect(
         dbname=database,
         host=DB_HOST,
