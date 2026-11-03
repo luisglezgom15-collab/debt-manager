@@ -72,6 +72,20 @@ Debt Manager follows a frontend-backend-database architecture:
 
 The frontend communicates with the backend through HTTP requests, while the backend handles database operations.
 
+## Screenshots
+
+### Dashboard
+
+![Debt Manager Dashboard](docs/screenshots/dashboard.png)
+
+### Create a Debt
+
+![Create Debt Form](docs/screenshots/create-debt.png)
+
+### Edit a Debt
+
+![Edit Debt Form](docs/screenshots/edit-debt.png)
+
 ## Project Structure
 
 ```text
