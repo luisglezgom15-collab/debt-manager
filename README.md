@@ -1,55 +1,76 @@
 # Debt Manager
 
-Debt Manager is a personal debt management application that allows users to register, track, update, and manage debts through a web interface.
+**Debt Manager** is a full-stack debt management application that allows users to register, track, update, and manage debts through a web interface.
 
-The application provides a dashboard to monitor total debt, payments, outstanding balances, and payment progress. It uses PostgreSQL for persistent data storage and a REST API built with FastAPI to connect the backend with the frontend.
+The application includes an interactive dashboard to monitor total debt, payments, outstanding balances, and payment progress. It uses **FastAPI** for the REST API, **PostgreSQL** for persistent data storage, and **Next.js** for the frontend.
 
-This project was developed as a learning-by-building initiative to strengthen software development skills, including backend development, frontend development, database management, automated testing, containerization, and version control.
+This project was developed as a learning-by-building initiative to strengthen practical software development skills, including backend and frontend development, database management, automated testing, containerization, and deployment.
+
+## Live Demo
+
+- **Application:** [Debt Manager](https://debt-manager-luis.vercel.app)
+- **Backend API:** [API](https://debt-manager-a97o.onrender.com)
+- **Interactive API documentation:** [Swagger UI](https://debt-manager-a97o.onrender.com/docs)
+
+> **Note:** The free hosting services may temporarily sleep after periods of inactivity. The first request may take longer while the services start.
 
 ## Features
 
-- Create new debts
-- View all registered debts
-- Update existing debts
-- Delete debts
-- Calculate remaining debt automatically
-- Track total debt, total payments, and outstanding balances
-- Monitor payment progress through dashboard indicators
-- Validate user input and API requests
-- Persist debt records using PostgreSQL
-- Access debt management operations through a REST API
-- Automated backend testing with pytest
-- Containerized application using Docker and Docker Compose
+- Create, view, update, and delete debts.
+- Track debt amounts and payments.
+- Calculate outstanding balances automatically.
+- Monitor total debt, total payments, and pending balances.
+- Visualize payment progress through dashboard indicators.
+- Validate user input and API requests.
+- Persist records using PostgreSQL.
+- Access debt management operations through a REST API.
+- Use a command-line interface (CLI).
+- Run automated backend tests with pytest.
+- Run the application using Docker and Docker Compose.
 
 ## Tech Stack
 
-### Backend
+### Backend Technologies
 
-- **Python** — backend application logic
-- **FastAPI** — REST API development
-- **Pydantic** — data validation and serialization
-- **PostgreSQL** — relational database and persistent data storage
-- **Psycopg** — PostgreSQL database connectivity
-- **python-dotenv** — environment variable management
+- **Python** — application logic.
+- **FastAPI** — REST API development.
+- **Pydantic** — data validation and serialization.
+- **PostgreSQL** — relational database.
+- **Psycopg** — PostgreSQL connectivity.
+- **python-dotenv** — environment variable management.
 
-### Frontend
+### Frontend Technologies
 
-- **Next.js** — React framework for the web application
-- **React** — user interface development
-- **TypeScript** — static typing for JavaScript
-- **Tailwind CSS** — interface styling
+- **Next.js** — React framework.
+- **React** — user interface.
+- **TypeScript** — static typing.
+- **Tailwind CSS** — interface styling.
 
-### Testing
+### Testing and Quality
 
-- **pytest** — backend automated testing
-- **pytest-cov** — test coverage measurement
-- **ESLint** — frontend code analysis
+- **pytest** — automated backend tests.
+- **pytest-cov** — test coverage measurement.
+- **ESLint** — frontend code analysis.
+- **TypeScript** — frontend type checking.
 
-### DevOps and Development Tools
+### DevOps and Tools
 
-- **Docker** — application containerization
-- **Docker Compose** — multi-container application orchestration
-- **Git & GitHub** — version control and project management
+- **Docker** — application containerization.
+- **Docker Compose** — multi-container orchestration.
+- **Git and GitHub** — version control.
+- **Vercel** — frontend deployment.
+- **Render** — backend deployment.
+- **Neon** — managed PostgreSQL database.
+
+## Architecture
+
+Debt Manager follows a frontend-backend-database architecture:
+
+1. The **Next.js frontend**, hosted on Vercel, provides the user interface.
+2. The **FastAPI backend**, hosted on Render, exposes the REST API and handles application operations.
+3. The **PostgreSQL database**, hosted on Neon, stores debt records persistently.
+
+The frontend communicates with the backend through HTTP requests, while the backend handles database operations.
 
 ## Project Structure
 
@@ -73,16 +94,10 @@ debt-manager/
 │   ├── public/
 │   ├── src/
 │   │   └── app/
-│   ├── .dockerignore
 │   ├── .env.example
 │   ├── Dockerfile
-│   ├── eslint.config.mjs
-│   ├── next.config.ts
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tsconfig.json
+│   └── package.json
 │
-├── .dockerignore
 ├── .env.example
 ├── .gitignore
 ├── Dockerfile
@@ -94,31 +109,28 @@ debt-manager/
 └── README.md
 ```
 
-The project is organized into three main areas:
-
-- `app/` contains the Python backend, including the REST API, database operations, and debt management logic.
-- `frontend/` contains the Next.js application, including the user interface, page layout, styles, and static assets.
-- `tests/` contains the automated backend test suite, covering API endpoints, database operations, business logic, and CLI functionality.
-
-The root directory also contains the Docker configuration files used to build and run the application in containers.
+- `app/` contains the Python backend, REST API, database operations, and debt management logic.
+- `frontend/` contains the Next.js application and user interface.
+- `tests/` contains the automated backend test suite.
+- The root directory contains Docker configuration, database initialization, and Python dependencies.
 
 ## Requirements
 
-### Local Development
+For local development:
 
 - Python 3.14+
 - PostgreSQL
 - Node.js and npm
 - Git
 
-### Docker Deployment
+For Docker:
 
 - Docker Desktop or Docker Engine
 - Docker Compose
 
 ## Installation
 
-Clone the repository and navigate to the project directory:
+Clone the repository:
 
 ```bash
 git clone https://github.com/luisglezgom15-collab/debt-manager.git
@@ -134,7 +146,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install the backend dependencies:
+Install dependencies:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -142,16 +154,9 @@ pip install -r requirements-dev.txt
 
 ### Frontend Setup
 
-Navigate to the frontend directory and install the dependencies:
-
 ```bash
 cd frontend
 npm ci
-```
-
-Return to the project root:
-
-```bash
 cd ..
 ```
 
@@ -159,13 +164,13 @@ cd ..
 
 ### Backend Configuration
 
-Create a `.env` file in the project root based on `.env.example`:
+Create a `.env` file from the example:
 
 ```bash
 cp .env.example .env
 ```
 
-Configure the following environment variables:
+Configure the database connection:
 
 ```env
 DB_HOST=127.0.0.1
@@ -175,9 +180,11 @@ DB_NAME=debt_manager
 FRONTEND_URL=http://localhost:3000
 ```
 
+Make sure PostgreSQL is running and the configured database and user exist.
+
 ### Frontend Configuration
 
-Create a `.env.local` file inside the `frontend/` directory based on `frontend/.env.example`:
+Create the local environment file:
 
 ```bash
 cp frontend/.env.example frontend/.env.local
@@ -189,117 +196,97 @@ Configure the API URL:
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 ```
 
-Do not commit `.env` or `.env.local` files to the repository.
+Never commit `.env` or `.env.local` files. Do not share database credentials or connection strings.
 
 ## Running the Application
 
 ### Start the Backend
 
-From the project root, activate the virtual environment and start the FastAPI server:
+From the project root:
 
 ```bash
 source .venv/bin/activate
 uvicorn app.api:app --reload
 ```
 
-The backend API will be available at:
+The API will be available at:
 
 `http://127.0.0.1:8000`
 
-Interactive API documentation is available at:
+Interactive API documentation:
 
 `http://127.0.0.1:8000/docs`
 
 ### Start the Frontend
 
-Open a separate terminal, navigate to the frontend directory, and start the development server:
+In a separate terminal:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-The web application will be available at:
+The application will be available at:
 
 `http://localhost:3000`
 
-### Run the Command-Line Interface (CLI)
+### Run the CLI
 
-Alternatively, you can run the command-line version from the project root:
+From the project root:
 
 ```bash
 python -m app.main
 ```
 
-The CLI provides the following options:
+The CLI provides options to:
 
-1. View debts
-2. Add a debt
-3. Delete a debt
-4. Update a debt
-5. Exit
+1. View debts.
+2. Add a debt.
+3. Delete a debt.
+4. Update a debt.
+5. Exit.
 
 ## Running with Docker
 
-The application can also be executed using Docker Compose. This configuration starts three services:
+Docker Compose starts three services:
 
-- **Frontend:** Next.js application.
-- **Backend:** FastAPI REST API.
-- **Database:** PostgreSQL 18.
+- Frontend: Next.js.
+- Backend: FastAPI.
+- Database: PostgreSQL.
 
-### Configure Environment Variables
+Make sure the root `.env` file exists and contains a non-empty `DB_PASSWORD`.
 
-Make sure the root `.env` file exists and contains a non-empty `DB_PASSWORD` value.
-
-This password is used by the PostgreSQL Docker container and the backend to establish a database connection.
-
-Do not share or commit your `.env` file.
-
-### Build and Start the Containers
-
-From the project root, execute:
+Build and start the containers:
 
 ```bash
 docker compose up --build -d
 ```
 
-This command builds the application images and starts all services in the background.
-
-### Verify the Containers
-
-Check the status of the services:
+Check their status:
 
 ```bash
 docker compose ps
 ```
 
-PostgreSQL should report a healthy status, while the frontend and backend should be running.
-
-### Access the Application
-
-The application will be available at:
+Access the services:
 
 - Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8000`
+- Backend: `http://localhost:8000`
 - API documentation: `http://localhost:8000/docs`
 
-### View Application Logs
-
-To inspect the logs of all services:
+View logs:
 
 ```bash
 docker compose logs
 ```
 
-To display only the latest 50 lines:
+Or display the latest 50 lines:
 
 ```bash
 docker compose logs --tail=50
 ```
 
-### Stop the Containers
-
-To stop and remove the containers and the Docker network:
+Stop the containers:
 
 ```bash
 docker compose down
@@ -307,7 +294,7 @@ docker compose down
 
 The PostgreSQL data volume is preserved when using this command.
 
-To start the application again without rebuilding the images:
+To start the containers again without rebuilding:
 
 ```bash
 docker compose up -d
@@ -321,84 +308,90 @@ The database is initialized using `init.sql` when the PostgreSQL volume is creat
 
 The Docker database is independent of any PostgreSQL database running directly on the host machine. Existing local database records are not automatically migrated into the Docker database.
 
-**Important:** Avoid using `docker compose down -v` unless you intentionally want to delete the PostgreSQL volume and its stored data.
+**Warning:** Avoid using `docker compose down -v` unless you intentionally want to delete the PostgreSQL volume and its stored data.
 
 ## Running Tests
 
 ### Backend Tests
 
-Run the complete backend test suite from the project root:
+From the project root:
 
 ```bash
 python -m pytest -v
 ```
 
-To run the tests with code coverage:
+To measure code coverage:
 
 ```bash
 python -m pytest --cov=app --cov-report=term-missing
 ```
 
-The backend test suite currently contains **55 tests**.
+The backend test suite contains **55 automated tests**.
 
 ### Frontend Checks
 
-Navigate to the frontend directory:
-
-```bash
-cd frontend
-```
-
-Run ESLint to check code quality:
+From the frontend directory:
 
 ```bash
 npm run lint
-```
-
-Run TypeScript type checking:
-
-```bash
 npx tsc --noEmit
-```
-
-Build the application to verify that it compiles successfully:
-
-```bash
 npm run build
 ```
 
+These commands check code quality, TypeScript types, and production build compatibility.
+
+## Deployment
+
+The production application uses the following services:
+
+|Component|Platform|
+|---|---|
+|Frontend|Vercel|
+|Backend|Render|
+|Database|Neon PostgreSQL|
+
+Environment variables are configured through each hosting provider rather than committed to the repository.
+
 ## Project Status
 
-Debt Manager currently provides a functional web application for managing personal debts, supported by a REST API and persistent PostgreSQL storage.
+**Debt Manager 1.0 is deployed and functional.**
 
-The project includes:
+The current version includes:
 
-- Full CRUD operations for debt management
-- Interactive web dashboard
-- Debt and payment tracking
-- Input validation and API request validation
-- REST API built with FastAPI
-- PostgreSQL database integration
-- Persistent data storage
-- Command-line interface (CLI)
-- Automated backend test suite with 55 passing tests
-- Frontend code quality and build checks
-- Environment-based configuration
-- Dockerfiles for the backend and frontend
-- Docker Compose orchestration
-- Persistent PostgreSQL storage using Docker volumes
+- Full CRUD operations.
+- Interactive web dashboard.
+- Debt and payment tracking.
+- Backend and API validation.
+- PostgreSQL integration and persistent storage.
+- Command-line interface.
+- 55 passing backend tests.
+- Frontend linting, type checking, and production build validation.
+- Dockerfiles and Docker Compose configuration.
+- Cloud deployment with Vercel, Render, and Neon.
 
-The application has been tested locally and with Docker, including debt creation, editing, deletion, dashboard updates, communication between services, and data persistence after container restarts.
+The application has been tested locally, with Docker, and in its deployed environment, including database connectivity and debt creation, editing, and deletion.
 
-The next development stage focuses on deploying Debt Manager 1.0 and preparing the project for future improvements.
+## Current Limitations
+
+- Version 1.0 does not include user registration or authentication.
+- Debt records are not separated by user.
+- The API currently allows public CRUD access.
+
+**Important:** Do not use real personal or financial information. This version is intended as a portfolio and learning project. CORS configuration does not provide authentication or access control.
 
 ## Future Improvements
 
-Planned improvements for future versions include:
+Planned improvements for future versions:
 
-- Add user registration and authentication
-- Implement secure user-specific debt management
-- Add detailed debt payment history
-- Allow users to track individual payments over time
-- Improve dashboard analytics and financial insights
-- Enhance the user interface and overall user experience
+- User registration and authentication.
+- Secure user-specific debt management.
+- Detailed debt payment history.
+- Individual payment tracking.
+- More advanced dashboard analytics and financial insights.
+- Further user interface and user experience improvements.
+
+---
+
+Developed by **Luis Gonzalez**.
+
+GitHub: [luisglezgom15-collab](https://github.com/luisglezgom15-collab)
