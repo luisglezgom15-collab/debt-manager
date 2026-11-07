@@ -1,10 +1,32 @@
 import os
 
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, Field, model_validator, ConfigDict, field_serializer
-from .database import get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
+from pydantic import BaseModel, Field, model_validator, ConfigDict, field_serializer, StringConstraints, field_validator
+from .database import get_connection, get_debts, get_debt_for_id, add_debt, delete_debt, update_debt, DB_NAME
 from fastapi.middleware.cors import CORSMiddleware
 from decimal import Decimal
+from typing import Annotated
+
+PersonName = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=1,
+        max_length=100
+    )
+]
+
+MAX_MONEY = Decimal("9999999999.99")
+
+
+def validate_money(value: Decimal) -> Decimal:
+    if value > MAX_MONEY:
+        raise ValueError("El monto no puede superar $9,999,999,999.99")
+
+    if value != value.quantize(Decimal("0.01")):
+        raise ValueError("El monto no puede tener más de dos decimales")
+
+    return value
 
 app = FastAPI(
     title="Debt Manager API",
@@ -43,7 +65,7 @@ class DebtCreate(BaseModel):
         }
     )
 
-    person: str
+    person: PersonName
     amount: Decimal = Field(gt=0)
     paid: Decimal = Field(ge=0)
 
@@ -53,6 +75,11 @@ class DebtCreate(BaseModel):
             raise ValueError("El monto pagado no puede ser mayor que la deuda")
 
         return self
+
+    @field_validator("amount", "paid")
+    @classmethod
+    def validate_amounts(cls, value: Decimal) -> Decimal:
+        return validate_money(value)
 
 class DebtUpdate(BaseModel):
     model_config = ConfigDict(
@@ -65,9 +92,21 @@ class DebtUpdate(BaseModel):
         }
     )
 
-    person: str | None = None
+    person: PersonName | None = None
     amount: Decimal = Field(gt=0)
     paid: Decimal = Field(ge=0)
+
+    @model_validator(mode="after")
+    def validate_debt(self):
+        if self.paid > self.amount:
+            raise ValueError("El monto pagado no puede ser mayor que la deuda")
+
+        return self
+    
+    @field_validator("amount", "paid")
+    @classmethod
+    def validate_amounts(cls, value: Decimal) -> Decimal:
+        return validate_money(value)
 
 def get_db():
     return DB_NAME
@@ -77,6 +116,20 @@ def say_hello():
     return {
         "message": "Hello Debt Manager"
     }
+
+@app.get("/health")
+def health_check():
+    try:
+        with get_connection() as connection:
+            connection.execute("SELECT 1")
+
+        return {"status": "ok", "database": "connected"}
+
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection failed"
+        )
 
 @app.get(
     "/debts",
