@@ -46,7 +46,9 @@ def get_debts(database=DB_NAME):
     with get_connection(database) as connection:
         with connection.cursor() as cursor:
 
-            cursor.execute("SELECT * FROM debts")
+            cursor.execute(
+                "SELECT id, person, amount, paid FROM debts"
+            )
 
             rows = cursor.fetchall()
 
@@ -134,7 +136,10 @@ def delete_debt(id, database=DB_NAME):
 def get_debt_for_id(id, database=DB_NAME):
     with get_connection(database) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM debts WHERE id = %s", (id,))
+            cursor.execute(
+                "SELECT id, person, amount, paid FROM debts WHERE id = %s",
+                (id,)
+            )
 
             row = cursor.fetchone()
 

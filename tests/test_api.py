@@ -228,3 +228,73 @@ def test_cors_rejects_unconfigured_frontend():
     )
 
     assert "access-control-allow-origin" not in response.headers
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"person": "Juan", "amount": 100.999, "paid": 20},
+        {"person": "Juan", "amount": 100, "paid": 20.999},
+        {"person": "Juan", "amount": 10000000000, "paid": 0},
+        {"person": "Juan", "amount": 100, "paid": 100.01},
+        {"person": "   ", "amount": 100, "paid": 0},
+        {"person": "A" * 101, "amount": 100, "paid": 0},
+    ]
+)
+
+def test_create_debt_invalid_data(payload):
+    response = client.post("/debts", json=payload)
+
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"amount": 100.999, "paid": 20},
+        {"amount": 100, "paid": 20.999},
+        {"amount": 10000000000, "paid": 0},
+        {"amount": 100, "paid": 100.01},
+        {"person": "   ", "amount": 100, "paid": 0},
+        {"person": "A" * 101, "amount": 100, "paid": 0},
+    ]
+)
+
+def test_update_debt_invalid_data(empty_test_db, payload):
+    debt = add_debt(
+        "Test",
+        1000,
+        100,
+        database="debt_manager_test"
+    )
+
+    response = client.put(
+        f"/debts/{debt['id']}",
+        json=payload
+    )
+
+    assert response.status_code == 422
+
+def test_health_check():
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "database": "connected"
+    }
+
+def test_health_check_database_unavailable(monkeypatch):
+    def mock_get_connection():
+        raise Exception("Database unavailable")
+
+    monkeypatch.setattr(
+        "app.api.get_connection",
+        mock_get_connection
+    )
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "detail": "Database connection failed"
+    }
