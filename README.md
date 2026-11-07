@@ -340,7 +340,7 @@ To measure code coverage:
 python -m pytest --cov=app --cov-report=term-missing
 ```
 
-The backend test suite contains **55 automated tests**.
+The backend test suite contains **69 automated tests**, all passing.
 
 ### Frontend Checks
 
@@ -374,11 +374,14 @@ The current version includes:
 
 - Full CRUD operations.
 - Interactive web dashboard.
+- Light and dark theme support.
+- Custom confirmation dialogs for debt deletion.
+- Debt settlement alerts and duplicate-name warnings.
 - Debt and payment tracking.
 - Backend and API validation.
 - PostgreSQL integration and persistent storage.
 - Command-line interface.
-- 55 passing backend tests.
+- 69 passing backend tests.
 - Frontend linting, type checking, and production build validation.
 - Dockerfiles and Docker Compose configuration.
 - Cloud deployment with Vercel, Render, and Neon.
